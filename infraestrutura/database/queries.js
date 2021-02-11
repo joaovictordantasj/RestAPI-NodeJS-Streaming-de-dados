@@ -11,3 +11,5 @@ const execuraQuery = (query, params = '') => {
     });
   });
 }
+
+module.exports = execuraQuery;
