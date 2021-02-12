@@ -4,28 +4,41 @@ const conexao = require('../infraestrutura/database/conexao');
 const repositorio = require('../repositorios/atendimento');
 
 class Atendimento {
-  adiciona(atendimento) {
-    const dataCriacao = moment().format('YYYY-MM-DD HH:MM:SS');
-    const data = moment(atendimento.data, 'DD/MM/YYYY').format('YYYY-MM-DD HH:MM:SS');
-    
-    const dataEhValida = moment(data).isSameOrAfter(dataCriacao);
-    const clienteEhValido = atendimento.cliente.length >= 3;
+  constructor () {
+    this.dataEhValida = ({data, dataCriacao}) => moment(data).isSameOrAfter(dataCriacao);
+    this.clienteEhValido = (tamanho) => tamanho >= 3;
 
-    const validacoes = [
+    this.valida = parameters => this.validacoes.filter(campo => {
+      const { nome } = campo;
+      const parameto = parametos[nome];
+
+      return !campo.valido(parameto);
+    });
+
+    this.validacoes = [
       {
         nome: 'data',
-        valido: dataEhValida,
+        valido: this.dataEhValida,
         mensagem: 'Data deve ser maior ou igual a data atual'
       },
       {
         nome: 'cliente',
-        valido: clienteEhValido,
+        valido: this.clienteEhValido,
         mensagem: 'Cliente deve ter pelo menos 3 caracteres'
       }
-    ]
+    ];
+  }
 
-    const erros = validacoes.filter(campo => !campo.valido)
-    const existemErros = erros.length
+  adiciona(atendimento) {
+    const dataCriacao = moment().format('YYYY-MM-DD HH:MM:SS');
+    const data = moment(atendimento.data, 'DD/MM/YYYY').format('YYYY-MM-DD HH:MM:SS');
+    
+    const paramentros = {
+      data: { data, dataCriacao },
+      cliente: { tamanho: atendimento.cliente.lenth }
+    };
+    const erros = this.valida(paramentros);
+    const existemErros = erros.length;
 
     if(existemErros) {
       return new Promise(resolve, reject => reject(erros))
